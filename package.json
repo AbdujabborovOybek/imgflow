@@ -1,0 +1,61 @@
+{
+  "name": "imgflow",
+  "version": "1.0.0",
+  "description": "Simple Express image upload middleware powered by sharp",
+  "type": "commonjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AbdujabborovOybek/imgflow.git"
+  },
+  "keywords": [
+    "express",
+    "middleware",
+    "multer",
+    "sharp",
+    "image",
+    "upload",
+    "typescript"
+  ],
+  "author": "Abdujabborov Oybek",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AbdujabborovOybek/imgflow/issues"
+  },
+  "homepage": "https://github.com/AbdujabborovOybek/imgflow#readme",
+  "dependencies": {
+    "multer": "^2.0.2",
+    "sharp": "^0.34.5",
+    "uuid": "^13.0.0"
+  },
+  "peerDependencies": {
+    "express": "^4.18.0 || ^5.0.0"
+  },
+  "devDependencies": {
+    "@types/multer": "^2.0.0",
+    "@types/node": "^25.0.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}
