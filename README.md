@@ -214,10 +214,12 @@ imgflow({
 
 Built-in messages:
 
-- `LIMIT_<field>` → `"<field> fayl limiti oshdi."`
-- `INVALID_TYPE` → `Faqat rasm yuborish mumkin.`
-- `INVALID_IMAGE` → `Yaroqsiz rasm fayl.`
-- `INVALID_SUBFOLDER` → `Upload papka yo'li noto'g'ri.`
+<!-- Replace the Uzbek list below with this English version -->
+
+- `LIMIT_<field>` → `"<field> file limit exceeded."`
+- `INVALID_TYPE` → `Only images are accepted.`
+- `INVALID_IMAGE` → `Invalid image file.`
+- `INVALID_SUBFOLDER` → `Invalid upload folder path.`
 - Default status: `400`.
 
 ---
