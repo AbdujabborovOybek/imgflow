@@ -30,6 +30,7 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
+          cache: npm
 
       - name: Show versions
         run: |
@@ -42,21 +43,17 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Optional: you can remove this step if you don't want CI to run tests
-      - name: Test (optional)
+      - name: Test
         run: npm test --if-present
+
+      # (Ixtiyoriy) token to'g'ri o'qilayotganini tez tekshiradi, tokenni oshkor qilmaydi
+      - name: NPM auth check
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm whoami
 
       - name: Release
         env:
-          # GitHub Actions built-in token (needed for tags/releases/PRs)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-          # Your npm Automation token saved in GitHub Secrets
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-          # Some npm tooling expects NODE_AUTH_TOKEN instead of NPM_TOKEN
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-          # Ensure registry is correct in CI
-          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
         run: npx semantic-release
