@@ -16,6 +16,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
+    # O'zi yaratgan bump commit (skip ci) qayta trigger bo'lib loop bo'lmasin
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,17 +51,19 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm whoami
 
+      # Bump (patch) -> commit + tag lokalda yaratiladi
       - name: Bump version (patch) locally
-        run: |
+        run: >
           npm version patch -m "chore(release): %s [skip ci]"
 
+      # Publish (2FA/EOTP bo'lmasligi uchun NPM_TOKEN automation token bo'lishi shart)
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
+      # Publish muvaffaqiyatli bo'lgandan keyin version commit + tag'ni remote'ga push qilamiz
       - name: Push changes + tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git push origin HEAD:main --follow-tags
+        run: git push origin HEAD:main --follow-tags
