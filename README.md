@@ -2,7 +2,7 @@
 
 A simple, TypeScript-first image upload middleware for Express.js. Built on top of `multer` (memory storage) and `sharp`. You describe where and how files should be saved; `imgflow` handles the rest.
 
-[![npm](https://img.shields.io/npm/v/imgflow.svg)](https://www.npmjs.com/package/imgflow)
+[![View on npm](https://img.shields.io/npm/v/imgflow.svg)](https://www.npmjs.com/package/imgflow)
 
 ## What does it do?
 
