@@ -1,8 +1,3 @@
 export { imgflow } from "./middleware";
-export type {
-  ImgflowOptions,
-  FieldConfig,
-  ResizeOptions,
-  OutputOptions,
-  Fit,
-} from "./types";
+export { imgflowUpload } from "./upload";
+export type { ImgflowOptions, FieldConfig } from "./types";
