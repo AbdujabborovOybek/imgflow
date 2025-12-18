@@ -18,8 +18,6 @@ A simple, TypeScript-first image upload middleware for Express.js. Built on top 
 
 ```bash
 npm install imgflow
-# express is required (peerDependency)
-npm install express
 ```
 
 ESM:
