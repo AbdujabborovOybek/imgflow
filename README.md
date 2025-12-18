@@ -1,24 +1,24 @@
 # imgflow
 
-Express.js uchun tasvir yuklashni sodda va xavfsiz qiladigan, **TypeScript-first** middleware. `multer` (memory storage) va `sharp` ustiga qurilgan; siz faqat qaysi papkaga va qanday parametrlar bilan saqlashni aytasiz, qolganini `imgflow` bajaradi.
+A simple, TypeScript-first image upload middleware for Express.js. Built on top of `multer` (memory storage) and `sharp`. You describe where and how files should be saved; `imgflow` handles the rest.
 
-## Nima qiladi?
+## What does it do?
 
-- `multer` yuklagan `buffer`larni o‘qiydi
-- faqat rasm fayllarini qabul qiladi
-- keshlash/resize/formatlashni `sharp` orqali bajaradi
-- noyob nomlar generatsiya qiladi (`uuid`)
-- papkalarni avtomatik yaratadi
-- fayllarni diskka yozadi
-- natijaviy nomlarni `req.body` ichiga joylaydi (string yoki string[] ko‘rinishida)
+- reads `multer` in-memory buffers
+- accepts images only
+- resizes/optimizes with `sharp`
+- generates unique filenames (`uuid`)
+- creates folders automatically
+- writes files to disk
+- puts the resulting filenames into `req.body` (string or string[])
 
 ---
 
-## O‘rnatish
+## Installation
 
 ```bash
 npm install imgflow
-# express ham kerak bo‘ladi (peerDependency)
+# express is required (peerDependency)
 npm install express
 ```
 
@@ -36,15 +36,15 @@ const { imgflow, imgflowUpload } = require("imgflow");
 
 ---
 
-## Asosiy ishlash ketma-ketligi
+## How it works
 
-1. **multer** `multipart/form-data`ni o‘qiydi va fayllarni xotirada (`buffer`) saqlaydi.
-2. **imgflow** bu bufferlarni tekshiradi, qayta ishlaydi va diskka yozadi.
-3. `req.body[field]` qiymati `maxCount` ga qarab **string** yoki **string[]** bo‘ladi.
+1. **multer** reads `multipart/form-data` and keeps files in memory (`buffer`).
+2. **imgflow** validates and processes those buffers, then saves them to disk.
+3. `req.body[field]` becomes a **string** or **string[]** depending on `maxCount`.
 
 ---
 
-## Tezkor start (cover + images)
+## Quick start (cover + gallery)
 
 ```ts
 import express from "express";
@@ -75,7 +75,7 @@ app.post(
 app.listen(3000);
 ```
 
-Natija tuzilmasi:
+Resulting structure:
 
 ```
 uploads/
@@ -88,9 +88,9 @@ uploads/
 
 ---
 
-## Multersiz yagona middleware (imgflowUpload)
+## One clean middleware (imgflowUpload)
 
-`imgflowUpload` — `multer.memoryStorage()` + `upload.fields(...)` + `imgflow(...)` ni bitta massivda qaytaradi.
+`imgflowUpload` bundles `multer.memoryStorage()` + `upload.fields(...)` + `imgflow(...)` into a single array of middlewares.
 
 ```ts
 import { imgflowUpload } from "imgflow";
@@ -100,7 +100,11 @@ app.post(
   imgflowUpload({
     uploadRoot: "uploads",
     fields: {
-      avatar: { dir: "avatars", maxCount: 1, resize: { width: 256, height: 256, fit: "cover" } },
+      avatar: {
+        dir: "avatars",
+        maxCount: 1,
+        resize: { width: 256, height: 256, fit: "cover" },
+      },
       gallery: { dir: "gallery", maxCount: 12, resize: { width: 1600 } },
     },
   }),
@@ -110,39 +114,39 @@ app.post(
 
 ---
 
-## Konfiguratsiya: `ImgflowOptions`
+## Configuration: `ImgflowOptions`
 
 ```ts
 imgflow({
-  uploadRoot: "uploads",          // majburiy: ildiz papka
-  fields: { ... },                // majburiy: har bir field uchun sozlama
-  fileName?: ({ field, ext }) => string, // ixtiyoriy: fayl nomi generatori
-  onError?: (err) => ({ status?: number; message: string }) // ixtiyoriy: javobni sozlash
+  uploadRoot: "uploads",          // required: root folder
+  fields: { ... },                // required: per-field config
+  fileName?: ({ field, ext }) => string, // optional: custom filename
+  onError?: (err) => ({ status?: number; message: string }) // optional: custom response
 });
 ```
 
 ### `fields` (FieldConfig)
 
-Har bir field ikki ko‘rinishda bo‘lishi mumkin:
+Each field can be defined in two ways:
 
 ```ts
 fields: {
-  // qisqa yozuv: faqat papka (maxCount = 1)
+  // short form: only folder (maxCount = 1)
   avatar: "avatars",
 
-  // to‘liq sozlama
+  // full config
   cover: {
-    dir: "posts/covers",   // majburiy
+    dir: "posts/covers",   // required
     maxCount: 1,           // default: 1
-    resize: { ... },       // ixtiyoriy (qarang: Resize)
-    output: { ... },       // ixtiyoriy (qarang: Output)
+    resize: { ... },       // optional (see Resize)
+    output: { ... },       // optional (see Output)
   },
 }
 ```
 
-- **`dir`**: `uploadRoot` ichidagi nisbiy papka. Noto‘g‘ri yo‘l (`..` yoki absolyut) bo‘lsa, `INVALID_SUBFOLDER`.
-- **`maxCount`**: multer limitiga mos ishlaydi; limit oshsa `LIMIT_<field>` xatosi.
-- **Natija**: `maxCount=1` → `req.body[field]` **string**, aks holda **string[]**.
+- **`dir`**: relative folder inside `uploadRoot`. Invalid paths (`..` or absolute) throw `INVALID_SUBFOLDER`.
+- **`maxCount`**: aligned with multer’s limit; exceeding it throws `LIMIT_<field>`.
+- **Result type**: `maxCount=1` → `req.body[field]` is a **string**, otherwise a **string[]**.
 
 ### Resize (`resize`)
 
@@ -155,16 +159,16 @@ fields: {
 }
 ```
 
-- Faqat `width` yoki `height` berilsa ham nisbat saqlanadi (`fit="inside"` default).
-- `fit="cover"`: avatarlar uchun markazdan croplab beradi.
-- `withoutEnlargement=true`: kichik rasmni kattalashtirmaydi (default).
+- Only `width` or `height` still preserves aspect ratio (`fit="inside"` by default).
+- `fit="cover"` crops from center—great for avatars.
+- `withoutEnlargement=true` prevents upscaling smaller images (default).
 
-Misollar:
+Examples:
 
 ```ts
-resize: { width: 1200 }                             // proporsiyani saqlagan holda kenglik
-resize: { width: 256, height: 256, fit: "cover" }  // kvadrat avatar
-resize: { width: 1600, withoutEnlargement: false } // kerak bo‘lsa kattalashtiradi
+resize: { width: 1200 }                             // maintain aspect ratio by width
+resize: { width: 256, height: 256, fit: "cover" }  // square avatar
+resize: { width: 1600, withoutEnlargement: false } // allow upscaling if needed
 ```
 
 ### Output (`output`)
@@ -172,20 +176,20 @@ resize: { width: 1600, withoutEnlargement: false } // kerak bo‘lsa kattalashti
 ```ts
 {
   format?: "jpeg" | "png" | "webp" | "avif"; // default: original format
-  quality?: number;          // jpeg/webp/avif uchun sifat
-  compressionLevel?: number; // png uchun (0..9)
+  quality?: number;          // jpeg/webp/avif quality
+  compressionLevel?: number; // png only (0..9)
 }
 ```
 
-Misollar:
+Examples:
 
 ```ts
-output: { format: "webp", quality: 80 }     // webp + sifat
-output: { quality: 90 }                     // asl format, faqat sifat (jpeg/webp/avif)
-output: { format: "png", compressionLevel: 9 } // maksimal siqish (png)
+output: { format: "webp", quality: 80 }         // webp + quality
+output: { quality: 90 }                         // keep original format, tweak quality
+output: { format: "png", compressionLevel: 9 }  // max compression for png
 ```
 
-### Fayl nomini sozlash (`fileName`)
+### Custom filenames (`fileName`)
 
 ```ts
 imgflow({
@@ -194,25 +198,25 @@ imgflow({
 });
 ```
 
-- Default: `uuidv4()` + original yoki tanlangan formatdagi kengaytma.
-- `ext` — yakuniy format (`jpeg`/`png`/`webp`/`avif`/original).
+- Default: `uuidv4()` with the final format extension.
+- `ext` is the resulting format (`jpeg`/`png`/`webp`/`avif`/original).
 
-### Xatolarni boshqarish (`onError`)
+### Error handling (`onError`)
 
 ```ts
 imgflow({
   ...,
   onError: (err) => {
     if (err.message === "INVALID_TYPE")
-      return { status: 415, message: "Faqat rasm qabul qilinadi." };
-    return { status: 400, message: "Yuklashda xatolik." };
+      return { status: 415, message: "Only images are accepted." };
+    return { status: 400, message: "Upload failed." };
   },
 });
 ```
 
-Standart xabarlar:
+Built-in messages:
 
-- `LIMIT_<field>` → `"<field> uchun fayl limiti oshdi."`
+- `LIMIT_<field>` → `"<field> fayl limiti oshdi."`
 - `INVALID_TYPE` → `Faqat rasm yuborish mumkin.`
 - `INVALID_IMAGE` → `Yaroqsiz rasm fayl.`
 - `INVALID_SUBFOLDER` → `Upload papka yo'li noto'g'ri.`
@@ -220,38 +224,20 @@ Standart xabarlar:
 
 ---
 
-## Frontenddan yuborish
+## Reading results and serving files
 
 ```js
-const fd = new FormData();
-fd.append("cover", coverFile);
-images.forEach((img) => fd.append("images", img));
+// maxCount = 1
+console.log(req.body.cover); // "b12c3d.webp"
 
-await fetch("/post/create", { method: "POST", body: fd });
+// multiple files
+console.log(req.body.images); // ["a1.png", "b2.png"]
 ```
 
----
-
-## Natija va foydalanish
-
-```js
-// maxCount=1 bo'lgan field
-console.log(req.body.cover);   // "b12c3d.webp"
-
-// bir nechta fayl
-console.log(req.body.images);  // ["a1.png", "b2.png"]
-```
-
-Diskdagi fayllarni serverga ulash:
+Serve uploaded files:
 
 ```ts
 import express from "express";
 app.use("/uploads", express.static("uploads"));
 // /uploads/posts/covers/<uuid>.webp
 ```
-
----
-
-## Litsenziya
-
-ISC
