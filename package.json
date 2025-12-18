@@ -44,7 +44,7 @@
   "bugs": {
     "url": "https://github.com/AbdujabborovOybek/imgflow/issues"
   },
-  "homepage": "https://github.com/AbdujabborovOybek/imgflow#readme",
+  "homepage": "https://www.npmjs.com/package/imgflow",
   "dependencies": {
     "multer": "^2.0.2",
     "sharp": "^0.34.5",
