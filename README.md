@@ -220,19 +220,7 @@ Built-in messages:
 
 ---
 
-## Sending from the frontend
-
-```js
-const fd = new FormData();
-fd.append("cover", coverFile);
-images.forEach((img) => fd.append("images", img));
-
-await fetch("/post/create", { method: "POST", body: fd });
-```
-
----
-
-## Reading results
+## Reading results and serving files
 
 ```js
 // maxCount = 1
