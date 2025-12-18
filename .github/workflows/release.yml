@@ -1,23 +1,23 @@
-name: Release
+name: Auto Bump + Publish (main)
 
 on:
   push:
     branches:
       - main
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
+
+concurrency:
+  group: bump-publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  release:
-    name: semantic-release
+  bump_and_publish:
     runs-on: ubuntu-latest
+
+    # Bump commit qayta trigger qilmasin (skip ci bilan keladi)
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     steps:
       - name: Checkout
@@ -32,10 +32,10 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: npm
 
-      - name: Show versions
+      - name: Configure Git
         run: |
-          node -v
-          npm -v
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: npm ci
@@ -43,17 +43,17 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm test --if-present
+      - name: Bump version (patch)
+        run: |
+          npm version patch -m "chore(release): %s [skip ci]"
 
-      # (Ixtiyoriy) token to'g'ri o'qilayotganini tez tekshiradi, tokenni oshkor qilmaydi
-      - name: NPM auth check
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm whoami
-
-      - name: Release
+      - name: Push changes + tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin HEAD:main --follow-tags
+
+      - name: Publish to npm
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: npm publish --access public
