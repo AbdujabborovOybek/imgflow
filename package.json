@@ -1,6 +1,6 @@
 {
   "name": "imgflow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple Express image upload middleware powered by sharp",
   "type": "commonjs",
   "main": "dist/index.js",
