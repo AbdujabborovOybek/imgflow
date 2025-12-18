@@ -23,7 +23,8 @@
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "echo \"No tests yet\" && exit 0",
+    "release": "changeset publish"
   },
   "repository": {
     "type": "git",
